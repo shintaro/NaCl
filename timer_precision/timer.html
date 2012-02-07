@@ -1,32 +1,37 @@
 <!DOCTYPE html>
 <html>
+  <!--
+  Copyright (c) 2011 The Native Client Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.
+  -->
 <head>
-  <title>Stream</title>
+  <title>Validation</title>
 
   <script type="text/javascript">
-    streamModule = null;  // Global application object.
+    timerModule = null;  // Global application object.
     statusText = 'NO-STATUS';
 
-    // Indicate load success.
+    // Indicate success when the NaCl module has loaded.
     function moduleDidLoad() {
-      streamModule = document.getElementById('stream');
+      timerModule = document.getElementById('timer');
       updateStatus('SUCCESS');
     }
 
-    // The 'message' event handler.  This handler is fired when the NaCl module
-    // posts a message to the browser by calling PPB_Messaging.PostMessage()
-    // (in C) or pp::Instance.PostMessage() (in C++).  This implementation
-    // simply displays the content of the message in an alert panel.
+    // Handle a message coming from the NaCl module.
     function handleMessage(message_event) {
-        t = message_event.data.replace(/:/g, "<p>"); 
-	updateStatus(t);
+      alert(message_event.data);
     }
 
     // If the page loads before the Native Client module loads, then set the
     // status message indicating that the module is still loading.  Otherwise,
     // do not change the status message.
     function pageDidLoad() {
-      if (streamModule == null) {
+      // Set the focus on the text input box.  Doing this means you can press
+      // return as soon as the page loads, and it will fire the reversetText()
+      // function.
+      document.forms.timerForm.inputBox.focus();
+      if (timerModule == null) {
         updateStatus('LOADING...');
       } else {
         // It's possible that the Native Client module onload event fired
@@ -36,10 +41,20 @@
         updateStatus();
       }
     }
-    
-    function stream() {
+
+    function timer() {
       // Grab the text from the text box, pass it into reverseText()
-      streamModule.postMessage('stream:');
+      var inputBox = document.forms.timerForm.inputBox;
+      timerModule.postMessage('timer:' + inputBox.value);
+      // Note: a |false| return tells the <form> tag to cancel the GET action
+      // when submitting the form.
+      return false;
+    }
+
+    function reverseText() {
+      // Grab the text from the text box, pass it into reverseText()
+      var inputBox = document.forms.timerForm.inputBox;
+      helloWorldModule.postMessage('reverseText:' + inputBox.value);
       // Note: a |false| return tells the <form> tag to cancel the GET action
       // when submitting the form.
       return false;
@@ -48,12 +63,12 @@
     // Set the global status message.  If the element with id 'statusField'
     // exists, then set its HTML to the status message as well.
     // opt_message The message test.  If this is null or undefined, then
-    // attempt to set the element with id 'statusField' to the value of
-    // |statusText|.
+    //     attempt to set the element with id 'statusField' to the value of
+    //     |statusText|.
     function updateStatus(opt_message) {
       if (opt_message)
         statusText = opt_message;
-      var statusField = document.getElementById('status_field');
+      var statusField = document.getElementById('statusField');
       if (statusField) {
         statusField.innerHTML = statusText;
       }
@@ -62,24 +77,24 @@
 </head>
 <body onload="pageDidLoad()">
 
-<h1>Native Client Stream Benchmark </h1>
+<h1>System Timer Precision</h1>
+
+This web application is using usleep() and gettimeofday() to find timer precision.  
 <p>
-  <form name="streamForm"
+  <form name="timerForm"
         action=""
         method="get"
-        onsubmit="return stream()">
-    <input type="submit" value="Call Stream()" />
+        onsubmit="return timer()">
+    <input type="text" id="inputBox" name="inputBox" value="1000" />
+    micro seconds<p>
+    <input type="submit" value="Call timer()" />
   </form>
-  <!-- Load the published .nexe.  This includes the 'nacl' attribute which
+  <!-- Load the published .nexe.  This includes the 'src' attribute which
   shows how to load multi-architecture modules.  Each entry in the "nexes"
-  object in the .nmf manifest file is a key-value pair: the key is the
-  instruction set architecture ('x86-32', 'x86-64', etc.); the value is a URL
-  for the desired NaCl module.
-  To load the debug versions of your .nexes, set the 'nacl' attribute to the
+  object in the  .nmf manifest file is a key-value pair: the key is the runtime
+  ('x86-32', 'x86-64', etc.); the value is a URL for the desired NaCl module.
+  To load the debug versions of your .nexes, set the 'src' attribute to the
   _dbg.nmf version of the manifest file.
-
-  Note: Since this NaCl module does not use any real-estate in the browser,
-  it's width and height are set to 0.
 
   Note: The <EMBED> element is wrapped inside a <DIV>, which has both a 'load'
   and a 'message' event listener attached.  This wrapping method is used
@@ -91,20 +106,21 @@
   -->
   <div id="listener">
     <script type="text/javascript">
-      var listener = document.getElementById('listener');
+      var listener = document.getElementById('listener')
       listener.addEventListener('load', moduleDidLoad, true);
       listener.addEventListener('message', handleMessage, true);
     </script>
 
     <embed name="nacl_module"
-       id="stream"
-       width=0 height=0
-       src="stream.nmf"
-       type="application/x-nacl" />
+           id="timer"
+           width=0 height=0
+           src="timer.nmf"
+           type="application/x-nacl" />
   </div>
+
 </p>
 
 <h2>Status</h2>
-<div id="status_field">NO-STATUS</div>
+<div id="statusField">NO-STATUS</div>
 </body>
 </html>

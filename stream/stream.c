@@ -49,7 +49,8 @@
 #include <string.h>
 #include <math.h>
 #include <sys/time.h>
-#include <sys/nacl_syscalls.h>
+//#include <sys/nacl_syscalls.h>
+//#include <ppapi/c/pp_time.h>
 #include <float.h>
 #include <limits.h>
 #include <stdio.h>
@@ -75,15 +76,15 @@
  */
 #define DEBUG
 
-#ifndef N
-#   define N	40000000
-#endif
-#ifndef NTIMES
-#   define NTIMES	10
-#endif
-#ifndef OFFSET
-#   define OFFSET	0
-#endif
+//#ifndef N
+#define N    30000000
+//#endif
+//#ifndef NTIMES
+#define NTIMES	10
+//#endif
+//#ifndef OFFSET
+#define OFFSET	0
+//#endif
 
 /*
  *	3) Compile the code with full optimization.  Many compilers
